@@ -21,7 +21,7 @@
   }
 
   *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-  html, body{ height:100%; overflow-x:hidden; }
+  html, body{ height:100%; }
   body{
     margin:0;
     font-family:'Nunito', sans-serif;
@@ -34,14 +34,13 @@
     padding:16px;
   }
 
-  .app{ width:100%; max-width:520px; min-width:0; }
+  .app{ width:100%; max-width:520px; }
 
   h1{
     font-family:'Baloo 2', sans-serif;
-    font-size:clamp(1.15rem, 6vw, 2rem);
+    font-size:clamp(1.35rem, 6vw, 2rem);
     text-align:center;
     margin:0 0 4px;
-    overflow-wrap:break-word;
   }
   .subtitle{
     text-align:center;
@@ -441,28 +440,6 @@ function shuffle(arr){
   return arr;
 }
 
-// Counts how many matching pairs ended up in grid-adjacent positions
-// (directly left/right or up/down of each other) for a given deck
-// order and column count. Random shuffling is genuinely fair, but
-// fair randomness still produces adjacent matches somewhat often on
-// a small grid — this is what lets us cap how many show up per game
-// without making the shuffle itself biased.
-function countAdjacentMatches(deck, cols){
-  let count = 0;
-  for(let i=0; i<deck.length; i++){
-    const col = i % cols;
-    const rightIndex = i + 1;
-    if(col + 1 < cols && rightIndex < deck.length && deck[rightIndex].emoji === deck[i].emoji){
-      count++;
-    }
-    const downIndex = i + cols;
-    if(downIndex < deck.length && deck[downIndex].emoji === deck[i].emoji){
-      count++;
-    }
-  }
-  return count;
-}
-
 function startGame(){
   const tier = TIERS[state.tierIndex];
   const [small, large] = tier.dims;
@@ -484,18 +461,7 @@ function startGame(){
     deck.push({ emoji, id: i, matched:false });
     deck.push({ emoji, id: i, matched:false });
   });
-
-  // Allow at most 1 adjacent match per game — reshuffle (not bias
-  // individual placements) until the board satisfies that. This
-  // keeps every accepted layout genuinely randomly-ordered; it's
-  // just that layouts with 2+ adjacent matches get discarded and
-  // re-rolled rather than allowed through.
   shuffle(deck);
-  let attempts = 0;
-  while(countAdjacentMatches(deck, state.lockedCols) > 1 && attempts < 200){
-    shuffle(deck);
-    attempts++;
-  }
   state.cards = deck;
 
   state.flippedIndices = [];
